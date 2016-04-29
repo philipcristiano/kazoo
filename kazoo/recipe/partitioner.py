@@ -323,7 +323,9 @@ class SetPartitioner(object):
                     # We mustn't lock without timeout because in that case we
                     # can get a deadlock if the party state will change during
                     # lock acquisition.
-                    lock.acquire(timeout=self._max_reaction_time)
+                    if not lock.acquire(timeout=self._max_reaction_time):
+                        # Someone is holding a lock we need, nothing we can do
+                        self._fail_out()
                 except LockTimeout:
                     if abort_if_needed():
                         return
